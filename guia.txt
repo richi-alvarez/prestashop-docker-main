@@ -1,0 +1,9 @@
+docker exec -ti prestashop /bin/bash
+php bin/console prestashop:module enable xxx # enables the module xxx
+tail -f var/logs/dev.log # tail in interactive mode the dev.log file
+# you can use all other commands you may need
+docker exec -i prestashop php bin/console list # will execute list command from Symfony's console 
+
+https://devdocs.prestashop-project.org/8/basics/installation/environments/docker/#complete-docker-composeyml-for-reference
+
+docker exec -it prestashop php -i | grep upload_max_filesize
