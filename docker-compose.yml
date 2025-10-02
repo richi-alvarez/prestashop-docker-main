@@ -1,37 +1,46 @@
 version: '3.2'
 
 services:
-  db:
-    container_name: db
-    image: mysql:5.7
+  mysql:
+    #container_name: mysql
+    #image: mariadb:10.6.4-focal
+    image: mysql:8
+    restart: always
     ports: 
       - "3308:3306"
-    restart: unless-stopped
-    command: --default-authentication-plugin=mysql_native_password
     environment:
-      MYSQL_ROOT_PASSWORD: admin
-      MYSQL_PASSWORD: admin
       MYSQL_DATABASE: prestashop
+      MYSQL_PASSWORD: test
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_USER: prestashop
+    volumes:
+      - ./mysql/init-prestashop.sql:/docker-entrypoint-initdb.d/init-prestashop.sql
+      - persistent:/var/lib/mysql
     networks:
       - prestashop_network
-    volumes:
-      - ./conf:/etc/mysql/conf.d
-      - dbdata:/var/lib/mysql
   prestashop:
     container_name: prestashop
-    image: prestashop/prestashop:latest
+    image: prestashop/prestashop:8.2.3
     restart: unless-stopped
     depends_on:
-      - db
+      - mysql
     ports:
       - 8082:80
     environment:
-      DB_SERVER: db
+      DB_SERVER: mysql
       DB_NAME: prestashop
-      DB_USER: root
-      DB_PASSWD: admin
+      DB_USER: prestashop
+      DB_PASSWD: test
       PS_FOLDER_ADMIN: admin4577
       PS_FOLDER_INSTALL: install4577
+      PS_INSTALL_AUTO: 1        # ⚡ Instalación automática
+      PS_DEV_MODE: 1            # ⚡ Habilita modo desarrollador
+      PS_LANGUAGE: es           # Idioma por defecto
+      PS_COUNTRY: CO            # País por defecto
+      PS_TIMEZONE: America/Bogota
+      PS_CURRENCY: COP              # Moneda predeterminada (Peso Colombiano)
+      ADMIN_MAIL: admin@epayco.com  # 🔑 Usuario admin del Back Office
+      ADMIN_PASSWD: admin123        # 🔑 Contraseña admin
     networks:
       - prestashop_network
     volumes:
@@ -42,25 +51,25 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
     links:
-      - db:db
-    depends_on:
-      - db  
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3308
-      PMA_ARBITRARY: 1
-      MYSQL_USER: root
-      MYSQL_PASSWORD: admin
-      MYSQL_ROOT_PASSWORD: admin
-    restart: unless-stopped
+      - mysql:mysql
     ports:
-      - 8081:80
+      - 8089:80
+    restart: always
+    environment:
+        PMA_ARBITRARY: 1
+        PMA_HOST: mysql
+        MYSQL_USER: root
+        MYSQL_PASSWORD: test
+        MYSQL_ROOT_PASSWORD: test
+    depends_on:
+      - mysql
+    networks:
+      - prestashop_network
 
 networks:
   prestashop_network:
 
 volumes:
   psdata:
-  dbdata:
+  persistent:
