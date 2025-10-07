@@ -44,7 +44,7 @@ services:
     networks:
       - prestashop_network
     volumes:
-      - ./modules/testModule:/var/www/html/modules/testModule
+      - ./modules/testModule:/var/www/html/modules
       - ./themes/myTheme:/var/www/html/themes/myTheme
       - psdata:/var/www/html
       - ./conf/app.ini:/usr/local/etc/php/conf.d/app.ini
